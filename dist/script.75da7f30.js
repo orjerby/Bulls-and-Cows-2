@@ -182,47 +182,35 @@ function _calculateGuess2(guess) {
     bulls: bulls
   };
 }
-},{}],"logic.js":[function(require,module,exports) {
+},{}],"utils.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.clickedOnSetGuessButton = clickedOnSetGuessButton;
+exports.clickedOnSetSecretButton = clickedOnSetSecretButton;
 exports.createGuessContainer = createGuessContainer;
+exports.getDisabledButtons = getDisabledButtons;
 exports.getGuessNumberInput = getGuessNumberInput;
 exports.getPlayerContainer = getPlayerContainer;
 exports.getSecretContainer = getSecretContainer;
 exports.getSecretInput = getSecretInput;
 exports.isGameReadyToStart = isGameReadyToStart;
-exports.isSetGuessButton = isSetGuessButton;
-exports.isSetSecretButton = isSetSecretButton;
-exports.isValid = isValid;
-exports.startGame = startGame;
+exports.isValueValid = isValueValid;
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function getGuessNumberInput(_ref) {
-  var playerContainer = _ref.playerContainer;
-  return playerContainer.querySelector("[data-guess-number-input]");
-}
-function isSetSecretButton(_ref2) {
-  var node = _ref2.node;
+function clickedOnSetSecretButton(_ref) {
+  var node = _ref.node;
   return node.hasAttribute("data-set-secret-button");
 }
-function isSetGuessButton(_ref3) {
-  var node = _ref3.node;
+function clickedOnSetGuessButton(_ref2) {
+  var node = _ref2.node;
   return node.hasAttribute("data-set-guess-button");
-}
-function startGame() {
-  document.querySelectorAll("[data-set-guess-button]:disabled").forEach(function (button) {
-    button.disabled = false;
-  });
-}
-function isGameReadyToStart() {
-  return document.querySelectorAll("[data-set-guess-button]:disabled").length === 2;
 }
 function createGuessContainer() {
   var element = document.createElement("div");
@@ -239,19 +227,30 @@ function createGuessContainer() {
   element.append(button);
   return element;
 }
-function getPlayerContainer(_ref4) {
-  var node = _ref4.node;
+function isGameReadyToStart() {
+  var disabledButtons = getDisabledButtons();
+  return disabledButtons.length === 2;
+}
+function getDisabledButtons() {
+  return document.querySelectorAll("[data-set-guess-button]:disabled");
+}
+function getPlayerContainer(_ref3) {
+  var node = _ref3.node;
   return node.closest("[data-player]");
+}
+function getSecretContainer(_ref4) {
+  var playerContainer = _ref4.playerContainer;
+  return playerContainer.querySelector("[data-set-secret]");
 }
 function getSecretInput(_ref5) {
   var playerContainer = _ref5.playerContainer;
   return playerContainer.querySelector("[data-secret-number-input]");
 }
-function getSecretContainer(_ref6) {
+function getGuessNumberInput(_ref6) {
   var playerContainer = _ref6.playerContainer;
-  return playerContainer.querySelector("[data-set-secret]");
+  return playerContainer.querySelector("[data-guess-number-input]");
 }
-function isValid(_ref7) {
+function isValueValid(_ref7) {
   var value = _ref7.value;
   return new Set(_toConsumableArray(value)).size === 4;
 }
@@ -259,59 +258,69 @@ function isValid(_ref7) {
 "use strict";
 
 var _Secret = _interopRequireDefault(require("./Secret"));
-var _logic = require("./logic");
+var _utils = require("./utils");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 var secrets = {};
-document.addEventListener("click", function (_ref) {
+document.addEventListener("click", handleButtonClick);
+function handleButtonClick(_ref) {
   var target = _ref.target;
-  var playerContainer = (0, _logic.getPlayerContainer)({
+  var playerContainer = (0, _utils.getPlayerContainer)({
     node: target
   });
   if (!playerContainer) return;
   var playerNumber = playerContainer.dataset.playerNumber;
-  if ((0, _logic.isSetSecretButton)({
+  if ((0, _utils.clickedOnSetSecretButton)({
     node: target
   })) {
-    var secretNumberInput = (0, _logic.getSecretInput)({
-      playerContainer: playerContainer
-    });
-    if (!(0, _logic.isValid)({
-      value: secretNumberInput.value
-    })) {
-      alert("secret number is not valid!");
-      return;
-    }
-    secrets[playerNumber] = new _Secret.default(secretNumberInput.value);
-    (0, _logic.getSecretContainer)({
-      playerContainer: playerContainer
-    }).remove();
-    playerContainer.append((0, _logic.createGuessContainer)());
-    if ((0, _logic.isGameReadyToStart)()) {
-      (0, _logic.startGame)();
-    }
+    handleSetSecret(playerContainer, playerNumber);
     return;
   }
-  if ((0, _logic.isSetGuessButton)({
+  if ((0, _utils.clickedOnSetGuessButton)({
     node: target
   })) {
-    var guessNumberInput = (0, _logic.getGuessNumberInput)({
-      playerContainer: playerContainer
-    });
-    if (!(0, _logic.isValid)({
-      value: guessNumberInput.value
-    })) {
-      alert("guess number is not valid!");
-      return;
-    }
-    var oppositePlayerNumber = playerNumber === "1" ? "2" : "1";
-    var result = secrets[oppositePlayerNumber].setGuess(guessNumberInput.value);
-    if (result.bulls === 4) {
-      alert("Player ".concat(playerNumber, " won!"));
-    }
+    handleSetGuess(playerContainer, playerNumber);
     return;
   }
-});
-},{"./Secret":"Secret.js","./logic":"logic.js"}],"../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+}
+function handleSetSecret(playerContainer, playerNumber) {
+  var secretNumberInput = (0, _utils.getSecretInput)({
+    playerContainer: playerContainer
+  });
+  if (!(0, _utils.isValueValid)({
+    value: secretNumberInput.value
+  })) {
+    alert("secret number is not valid!");
+    return;
+  }
+  secrets[playerNumber] = new _Secret.default(secretNumberInput.value);
+  (0, _utils.getSecretContainer)({
+    playerContainer: playerContainer
+  }).remove();
+  playerContainer.append((0, _utils.createGuessContainer)());
+  if ((0, _utils.isGameReadyToStart)()) {
+    var disabledButtons = (0, _utils.getDisabledButtons)();
+    disabledButtons.forEach(function (button) {
+      button.disabled = false;
+    });
+  }
+}
+function handleSetGuess(playerContainer, playerNumber) {
+  var guessNumberInput = (0, _utils.getGuessNumberInput)({
+    playerContainer: playerContainer
+  });
+  if (!(0, _utils.isValueValid)({
+    value: guessNumberInput.value
+  })) {
+    alert("guess number is not valid!");
+    return;
+  }
+  var oppositePlayerNumber = playerNumber === "1" ? "2" : "1";
+  var result = secrets[oppositePlayerNumber].setGuess(guessNumberInput.value);
+  if (result.bulls === 4) {
+    alert("Player ".concat(playerNumber, " won!"));
+  }
+}
+},{"./Secret":"Secret.js","./utils":"utils.js"}],"../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -336,7 +345,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64076" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57510" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

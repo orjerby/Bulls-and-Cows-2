@@ -1,27 +1,9 @@
-export function getGuessNumberInput({ playerContainer }) {
-  return playerContainer.querySelector(`[data-guess-number-input]`);
-}
-
-export function isSetSecretButton({ node }) {
+export function clickedOnSetSecretButton({ node }) {
   return node.hasAttribute("data-set-secret-button");
 }
 
-export function isSetGuessButton({ node }) {
+export function clickedOnSetGuessButton({ node }) {
   return node.hasAttribute("data-set-guess-button");
-}
-
-export function startGame() {
-  document
-    .querySelectorAll("[data-set-guess-button]:disabled")
-    .forEach((button) => {
-      button.disabled = false;
-    });
-}
-
-export function isGameReadyToStart() {
-  return (
-    document.querySelectorAll("[data-set-guess-button]:disabled").length === 2
-  );
 }
 
 export function createGuessContainer() {
@@ -46,18 +28,31 @@ export function createGuessContainer() {
   return element;
 }
 
-export function getPlayerContainer({ node }) {
-  return node.closest("[data-player]");
+export function isGameReadyToStart() {
+  const disabledButtons = getDisabledButtons();
+  return disabledButtons.length === 2;
 }
 
-export function getSecretInput({ playerContainer }) {
-  return playerContainer.querySelector(`[data-secret-number-input]`);
+export function getDisabledButtons() {
+  return document.querySelectorAll("[data-set-guess-button]:disabled");
+}
+
+export function getPlayerContainer({ node }) {
+  return node.closest("[data-player]");
 }
 
 export function getSecretContainer({ playerContainer }) {
   return playerContainer.querySelector(`[data-set-secret]`);
 }
 
-export function isValid({ value }) {
+export function getSecretInput({ playerContainer }) {
+  return playerContainer.querySelector(`[data-secret-number-input]`);
+}
+
+export function getGuessNumberInput({ playerContainer }) {
+  return playerContainer.querySelector(`[data-guess-number-input]`);
+}
+
+export function isValueValid({ value }) {
   return new Set([...value]).size === 4;
 }
